@@ -1,0 +1,21 @@
+bin/
+obj/
+.vs/
+*.user
+node_modules/
+src/TicketFlow.Server/wwwroot/
+TestResults/
+
+# personal / local settings (live config lives in %APPDATA%\ticket-flow, never here)
+config.json
+*.local.json
+.env
+.env.*
+.claude/settings.local.json
+
+# editors, logs, temp
+.vscode/
+.idea/
+*.log
+*.tmp
+web/dist/

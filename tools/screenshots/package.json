@@ -1,0 +1,8 @@
+{
+  "name": "ticket-flow-screenshots",
+  "private": true,
+  "type": "module",
+  "description": "Renders the UI against mock data and saves the README screenshots to docs/screenshots.",
+  "scripts": { "shoot": "node shoot.mjs" },
+  "devDependencies": { "playwright-core": "1.48.2" }
+}

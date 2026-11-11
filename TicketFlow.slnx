@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/TicketFlow.Core/TicketFlow.Core.csproj" />
+    <Project Path="src/TicketFlow.Server/TicketFlow.Server.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TicketFlow.Tests/TicketFlow.Tests.csproj" />
+  </Folder>
+</Solution>

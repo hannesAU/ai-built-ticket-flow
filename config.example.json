@@ -1,0 +1,40 @@
+{
+  "ticketPrefixes": [
+    "PROJ"
+  ],
+  "repos": [
+    {
+      "path": "C:\\code\\my-api",
+      "name": "api",
+      "mergeMethod": "squash",
+      "requireApproval": true,
+      "reviewPrs": false
+    },
+    {
+      "path": "C:\\code\\my-web",
+      "mergeMethod": "squash",
+      "requireApproval": true,
+      "buildCommand": "npm run build",
+      "testCommand": "none",
+      "reviewPrs": true
+    }
+  ],
+  "excluded": [
+    "**/*.user"
+  ],
+  "excludeFromClaudeHook": true,
+  "gitHub": {
+    "user": ""
+  },
+  "jiraBaseUrl": "https://yourorg.atlassian.net/browse/",
+  "pollSeconds": 60,
+  "backgroundPollSeconds": 300,
+  "backupRetentionDays": 30,
+  "checkTimeoutMinutes": 30,
+  "reviews": {
+    "timeoutMinutes": 20,
+    "botPrs": "hidden"
+  },
+  "port": 5199,
+  "openBrowserOnStart": true
+}
