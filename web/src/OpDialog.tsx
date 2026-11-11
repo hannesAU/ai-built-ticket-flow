@@ -252,7 +252,7 @@ function renderFields(kind: string, p: FieldProps) {
 function TypeToggle({ value, onChange, disabled }: { value: string; onChange(v: string): void; disabled?: boolean }) {
   return (
     <div className="segmented" role="radiogroup" aria-label="Change type">
-      {['feat', 'fix'].map(t => (
+      {['feat', 'fix', 'chore'].map(t => (
         <button key={t} role="radio" aria-checked={value === t} disabled={disabled} className={value === t ? 'on' : ''} onClick={() => onChange(t)}>{t}</button>
       ))}
     </div>
@@ -282,8 +282,8 @@ function AssignFields({ req, setReq, preview }: FieldProps) {
         <>
           <div className="field-row">
             <label className="field grow-0">
-              <span className="label">Ticket</span>
-              <input autoFocus className="mono" placeholder="PROJ-1234" value={req.ticket ?? ''} style={{ width: 130 }}
+              <span className="label">Ticket <span className="muted">(optional)</span></span>
+              <input autoFocus className="mono" placeholder="PROJ-1234" title="Leave empty for work without a ticket" value={req.ticket ?? ''} style={{ width: 130 }}
                 onChange={e => setReq(r => ({ ...r, ticket: e.target.value }))} />
             </label>
             <label className="field grow">

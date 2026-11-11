@@ -10,6 +10,8 @@ Every action shows a step-by-step preview before it runs. Anything it discards o
 
 Ticket keys look like `PROJ-1234`. Jira links are built in, but any tracker that uses `KEY-123` style keys works.
 
+Each ticket has a type: `feat`, `fix` or `chore`. The commit message is `<type>(PROJ-1234): description`. The ticket number is optional. If you leave it empty, the work goes to a virtual ticket named after the description (`Tidy build scripts` → `wip/tidy-build-scripts`, pushed as `chore/tidy-build-scripts`). Its commit message has no scope, for example `chore: Tidy build scripts`, and it has no Jira link.
+
 ![The board: unassigned changes, repo cards, and tickets grouped by stage](docs/screenshots/board.png)
 
 ## Run it

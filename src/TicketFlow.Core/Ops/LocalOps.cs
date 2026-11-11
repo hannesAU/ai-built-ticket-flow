@@ -30,12 +30,12 @@ static class P
 public sealed class AssignOp : Operation<AssignRequest>
 {
     public override string Kind => "assign";
-    public override string? KeyOf(AssignRequest req) => req.ExistingKey ?? req.Ticket;
+    public override string? KeyOf(AssignRequest req) =>
+        req.ExistingKey ?? (string.IsNullOrWhiteSpace(req.Ticket) ? null : req.Ticket);
 
     public static bool IsTaken(Workspace w, string key) =>
         w.Snapshots.Any(s => s.Wip(key) is not null ||
-                             s.RemoteTicketBranches.Contains($"feat/{key}") ||
-                             s.RemoteTicketBranches.Contains($"fix/{key}")) ||
+                             TicketKeys.RemoteBranches(key).Any(s.RemoteTicketBranches.Contains)) ||
         w.Archive.HasKey(key);
 
     private static List<RepoSnapshot> Targets(Workspace w, AssignRequest req) =>
@@ -62,9 +62,13 @@ public sealed class AssignOp : Operation<AssignRequest>
         }
         else
         {
-            ticket = TicketKeys.NormalizeTicket(req.Ticket, w.Config.TicketPrefixes);
-            if (ticket is null) blockers.Add("Enter a ticket number like PROJ-1234");
-            else
+            // no ticket number → a virtual ticket named after the description ("chore: description")
+            ticket = string.IsNullOrWhiteSpace(req.Ticket)
+                ? desc.Length > 0 ? TicketKeys.VirtualTicket(desc, type) : null
+                : TicketKeys.NormalizeTicket(req.Ticket, w.Config.TicketPrefixes);
+            if (ticket is null && !string.IsNullOrWhiteSpace(req.Ticket))
+                blockers.Add("Enter a ticket number like PROJ-1234, or leave it empty for work without a ticket");
+            if (ticket is not null)
             {
                 foreach (var k in w.Snapshots.SelectMany(s => s.Wips).Select(x => x.Key).Distinct()
                              .Where(k => string.Equals(TicketKeys.TicketOf(k), ticket, StringComparison.OrdinalIgnoreCase)))

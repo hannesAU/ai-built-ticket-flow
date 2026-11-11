@@ -47,6 +47,28 @@ public class TicketKeyTests
         TicketKeys.RemoteBranch("FIX", "PROJ-77_2").ShouldBe("fix/PROJ-77_2");
         TicketKeys.RemoteBranch("whatever", "PROJ-1").ShouldBe("feat/PROJ-1");
     }
+
+    [Fact]
+    public void Chore_type_and_ticketless_commit_messages()
+    {
+        TicketKeys.NormalizeType("Chore").ShouldBe("chore");
+        TicketKeys.CommitMessage("chore", "FN-1234", "Bump deps").ShouldBe("chore(FN-1234): Bump deps");
+        TicketKeys.CommitMessage("chore", "bump-deps_2", " Bump deps ").ShouldBe("chore: Bump deps");
+        TicketKeys.RemoteBranch("chore", "bump-deps").ShouldBe("chore/bump-deps");
+    }
+
+    [Theory]
+    [InlineData("Bump dependencies!", "chore", "bump-dependencies")]
+    [InlineData("node 18", "chore", "chore-node-18")]          // would otherwise look like ticket NODE-18
+    [InlineData("  ***  ", "fix", "fix")]
+    [InlineData("Tidy up the very long and rambling build script names", "chore", "tidy-up-the-very-long-and-rambling-build")]
+    public void Virtual_ticket_is_a_slug_that_never_looks_like_a_real_ticket(string desc, string type, string expected)
+    {
+        var t = TicketKeys.VirtualTicket(desc, type);
+        t.ShouldBe(expected);
+        TicketKeys.IsVirtual(t).ShouldBeTrue();
+        TicketKeys.TicketOf(TicketKeys.MakeKey(t, 2)).ShouldBe(t);
+    }
 }
 
 public class ExcludeMatcherTests

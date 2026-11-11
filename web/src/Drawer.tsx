@@ -110,7 +110,7 @@ function DrawerHeader({ t }: { t: TicketView }) {
       <div className="drawer-title">
         <div className="row-gap">
           <span className="key big">{t.key}</span>
-          <button className="pill-btn" title="Toggle feat/fix" onClick={() => save(t.description, t.type === 'feat' ? 'fix' : 'feat')}>
+          <button className="pill-btn" title="Cycle feat / fix / chore" onClick={() => save(t.description, t.type === 'feat' ? 'fix' : t.type === 'fix' ? 'chore' : 'feat')}>
             <TypePill type={t.type} />
           </button>
           {t.jiraUrl && <a className="link small" href={t.jiraUrl} target="_blank" rel="noreferrer">Jira <Icon name="external" size={11} /></a>}

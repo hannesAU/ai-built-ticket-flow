@@ -29,7 +29,7 @@ export interface ActionState { enabled: boolean; reason?: string; label: string 
 export type Stage = 'working' | 'parked' | 'review' | 'ready'
 
 export interface TicketView {
-  key: string; ticket: string; description: string; type: 'feat' | 'fix'; stage: Stage; statusText: string
+  key: string; ticket: string; description: string; type: 'feat' | 'fix' | 'chore'; stage: Stage; statusText: string
   commitMessage: string; legs: LegView[]; flags: string[]; actions: Record<string, ActionState>
   primaryAction?: string; jiraUrl?: string; check?: CheckView
 }

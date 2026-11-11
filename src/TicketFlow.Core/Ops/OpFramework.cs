@@ -238,12 +238,12 @@ public static class OpUtil
     public static string Plural(int n, string word) => n == 1 ? $"1 {word}" : $"{n} {word}s";
 
     /// <summary>
-    /// feat/fix branches of a ticket (any suffix) on one repo's origin: remote branch name → sha.
+    /// feat/fix/chore branches of a ticket (any suffix) on one repo's origin: remote branch name → sha.
     /// Null when origin can't be reached.
     /// </summary>
     public static async Task<Dictionary<string, string>?> RemoteTicketBranchesAsync(GitRepo g, string ticket)
     {
-        var ls = await g.TryAsync("ls-remote", "--heads", "origin", $"feat/{ticket}*", $"fix/{ticket}*");
+        var ls = await g.TryAsync(["ls-remote", "--heads", "origin", .. TicketKeys.Types.Select(t => $"{t}/{ticket}*")]);
         if (!ls.Ok) return null;
         var d = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (var line in ls.Out.Split('\n', StringSplitOptions.RemoveEmptyEntries))

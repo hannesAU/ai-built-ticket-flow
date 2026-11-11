@@ -48,7 +48,7 @@ public sealed class RepoSnapshot
     public string? GitHubOwner { get; set; }
     public string? GitHubRepo { get; set; }
     public List<WipBranch> Wips { get; set; } = [];
-    /// <summary>Remote-tracking feat/… and fix/… branch names (without "origin/").</summary>
+    /// <summary>Remote-tracking feat/…, fix/… and chore/… branch names (without "origin/").</summary>
     public HashSet<string> RemoteTicketBranches { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     public DateTimeOffset ScannedAt { get; set; } = DateTimeOffset.Now;
     /// <summary>Hash of HEAD + the content of every included change; only computed while a wip branch is checked out.</summary>
@@ -119,7 +119,7 @@ public sealed partial class RepoScanner(GitCli cli)
                 }
             }
 
-            var rb = await g.TryAsync("for-each-ref", "--format=%(refname:short)", "refs/remotes/origin/feat/", "refs/remotes/origin/fix/");
+            var rb = await g.TryAsync(["for-each-ref", "--format=%(refname:short)", .. TicketKeys.Types.Select(t => $"refs/remotes/origin/{t}/")]);
             snap.RemoteTicketBranches = rb.Out.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                 .Select(x => x.StartsWith("origin/") ? x["origin/".Length..] : x)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);

@@ -101,6 +101,37 @@ public class WorkflowTests
     }
 
     [Fact]
+    public async Task Pr_merged_outside_the_app_can_be_completed()
+    {
+        await using var h = await Harness.CreateAsync("A");
+        await h.Write("A", "a.txt", "line1\nMINE\nline3\n");
+        await h.OpOk("assign", new { ticket = "PROJ-7", description = "Mine", type = "feat" });
+        await h.OpOk("commit", new { key = "PROJ-7" });
+        await h.OpOk("push", new { key = "PROJ-7" });
+
+        // On GitHub: master moves on, the PR is rebased, approved, rebase-merged and its branch deleted.
+        await h.TeammateCommit("A", "other.txt", "teammate\n");
+        var q = h.GitHub.Prs.Keys.Single();
+        h.GitHub.Prs[q] = h.GitHub.Prs[q] with { State = "MERGED", HeadSha = "0698705deadbeef", ReviewDecision = "APPROVED", MergeState = "UNKNOWN" };
+        await h.Run(h.Bare("A"), "branch", "-D", "feat/PROJ-7");
+        await h.Run(h.Work("A"), "fetch", "--quiet", "origin");
+        await h.Run(h.Work("A"), "checkout", "--quiet", "wip/PROJ-7");
+
+        await h.W.RescanAllAsync();
+        await h.W.PollPrsAsync();
+        var t = h.W.State().Tickets.Single();
+        t.Stage.ShouldBe(Stages.Ready);
+        t.Actions["complete"].Enabled.ShouldBeTrue();
+        (await h.Preview("complete", new { key = "PROJ-7" })).Blockers.ShouldBeEmpty();
+
+        await h.OpOk("complete", new { key = "PROJ-7" });
+        h.GitHub.Merges.ShouldBeEmpty();
+        (await h.State()).Tickets.ShouldBeEmpty();
+        (await h.Branch("A")).ShouldBe("master");
+        h.W.Archive.All().Single().Key.ShouldBe("PROJ-7");
+    }
+
+    [Fact]
     public async Task Rebase_conflict_is_reported_and_nothing_is_pushed()
     {
         await using var h = await Harness.CreateAsync("A");
@@ -185,6 +216,35 @@ public class WorkflowTests
         t.Key.ShouldBe("PROJ-9");
         t.Description.ShouldBe("Nine");
         t.Type.ShouldBe("fix");
+    }
+
+    [Fact]
+    public async Task Chore_without_ticket_number_gets_a_virtual_ticket()
+    {
+        await using var h = await Harness.CreateAsync("A");
+        await h.Write("A", "a.txt", "tidy\n");
+        await h.OpOk("assign", new { ticket = "", description = "Tidy build scripts", type = "chore" });
+        (await h.Branch("A")).ShouldBe("wip/tidy-build-scripts");
+        var t = (await h.State()).Tickets.Single();
+        t.Key.ShouldBe("tidy-build-scripts");
+        t.Type.ShouldBe("chore");
+        t.CommitMessage.ShouldBe("chore: Tidy build scripts");
+        t.JiraUrl.ShouldBeNull();
+
+        await h.OpOk("commit", new { key = t.Key });
+        (await h.Run(h.Work("A"), "log", "-1", "--format=%s", "wip/tidy-build-scripts")).ShouldBe("chore: Tidy build scripts");
+
+        await h.OpOk("push", new { key = t.Key });
+        (await h.Run(h.Bare("A"), "log", "-1", "--format=%s", "chore/tidy-build-scripts")).ShouldBe("chore: Tidy build scripts");
+
+        // same description again → separate virtual ticket with a suffix
+        await h.Write("A", "b.txt", "more\n");
+        (await h.Preview("assign", new { ticket = "", description = "Tidy build scripts", type = "chore" })).Title.ShouldContain("tidy-build-scripts_2");
+
+        // a ticket number still works, and still has to be valid
+        (await h.Preview("assign", new { ticket = "PROJ-", description = "x", type = "chore" })).Blockers.ShouldContain(b => b.Contains("ticket number"));
+        await h.OpOk("assign", new { ticket = "PROJ-55", description = "Tidy more", type = "chore" });
+        (await h.State()).Tickets.Single(x => x.Key == "PROJ-55").CommitMessage.ShouldBe("chore(PROJ-55): Tidy more");
     }
 
     [Fact]

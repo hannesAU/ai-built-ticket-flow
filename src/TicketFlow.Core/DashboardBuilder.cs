@@ -30,7 +30,7 @@ public static class LegStates
 /// <summary>Pure derivation of the dashboard from repo snapshots + PR info.</summary>
 public static partial class DashboardBuilder
 {
-    [GeneratedRegex(@"^(feat|fix)\(([^)]*)\):\s*(.*)$", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"^(feat|fix|chore)(?:\(([^)]*)\))?:\s*(.*)$", RegexOptions.IgnoreCase)]
     private static partial Regex SubjectRegex();
 
     public static FileView ToView(FileChange c) => new(c.Path, c.OrigPath, c.StatusLetter, c.Excluded);
@@ -128,7 +128,7 @@ public static partial class DashboardBuilder
 
         var ticket = TicketKeys.TicketOf(key);
         return new TicketView(key, ticket, desc, type, stage, statusText, message, legs, flags, actions, primary,
-            string.IsNullOrWhiteSpace(cfg.JiraBaseUrl) ? null : cfg.JiraBaseUrl!.TrimEnd('/') + "/" + ticket,
+            string.IsNullOrWhiteSpace(cfg.JiraBaseUrl) || TicketKeys.IsVirtual(key) ? null : cfg.JiraBaseUrl!.TrimEnd('/') + "/" + ticket,
             check is null ? null : BuildCheck(check, legsRaw));
     }
 
